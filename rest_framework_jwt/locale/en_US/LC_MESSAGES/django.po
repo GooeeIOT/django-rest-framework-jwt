@@ -64,5 +64,5 @@ msgid "Refresh has expired."
 msgstr ""
 
 #: serializers.py:173
-msgid "orig_iat field is required."
+msgid "iat field is required."
 msgstr ""

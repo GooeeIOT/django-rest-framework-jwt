@@ -116,7 +116,7 @@ Pass in an existing token to the refresh endpoint as follows: `{"token": EXISTIN
 $ curl -X POST -H "Content-Type: application/json" -d '{"token":"<EXISTING_TOKEN>"}' http://localhost:8000/api-token-refresh/
 ```
 
-Refresh with tokens can be repeated (token1 -> token2 -> token3), but this chain of token stores the time that the original token (obtained with username/password credentials), as `orig_iat`. You can only keep refreshing tokens up to `JWT_REFRESH_EXPIRATION_DELTA`.
+Refresh with tokens can be repeated (token1 -> token2 -> token3), but this chain of token stores the time that the original token (obtained with username/password credentials), as `iat`. You can only keep refreshing tokens up to `JWT_REFRESH_EXPIRATION_DELTA`.
 
 A typical use case might be a web app where you'd like to keep the user "logged in" the site without having to re-enter their password, or get kicked out by surprise before their token expired. Imagine they had a 1-hour token and are just at the last minute while they're still doing something. With mobile you could perhaps store the username/password to get a new token, but this is not a great idea in a browser. Each time the user loads the page, you can check if there is an existing non-expired token and if it's close to being expired, refresh it to extend their session. In other words, if a user is actively using your site, they can keep their "session" alive.
 
@@ -225,7 +225,7 @@ This is a string that will be checked against the `iss` field of the token.
 Default is `None`(do not check `iss` on JWT).
 
 ### JWT_ALLOW_REFRESH
-Enable token refresh functionality. Token issued from `rest_framework_jwt.views.obtain_jwt_token` will have an `orig_iat` field. Default is `False`
+Enable token refresh functionality. Token issued from `rest_framework_jwt.views.obtain_jwt_token` will have an `iat` field. Default is `False`
 
 ### JWT_REFRESH_EXPIRATION_DELTA
 Limit on token refresh, is a `datetime.timedelta` instance. This is how much time after the original token that future tokens can be refreshed from.
