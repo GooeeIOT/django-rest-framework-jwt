@@ -215,13 +215,13 @@ class TokenTestCase(BaseTestCase):
         response = client.post('/auth-token/', self.data, format='json')
         return response.data['token']
 
-    def create_token(self, user, exp=None, orig_iat=None):
+    def create_token(self, user, exp=None, iat=None):
         payload = utils.jwt_payload_handler(user)
         if exp:
             payload['exp'] = exp
 
-        if orig_iat:
-            payload['orig_iat'] = timegm(orig_iat.utctimetuple())
+        if iat:
+            payload['iat'] = timegm(iat.utctimetuple())
 
         token = utils.jwt_encode_handler(payload)
         return token
@@ -257,7 +257,7 @@ class VerifyJSONWebTokenTests(TokenTestCase):
         token = self.create_token(
             self.user,
             exp=datetime.utcnow() - timedelta(seconds=5),
-            orig_iat=datetime.utcnow() - timedelta(hours=1)
+            iat=datetime.utcnow() - timedelta(hours=1)
         )
 
         response = client.post('/auth-token-verify/', {'token': token},
@@ -316,11 +316,11 @@ class RefreshJSONWebTokenTests(TokenTestCase):
             orig_token = self.get_token()
             orig_token_decoded = utils.jwt_decode_handler(orig_token)
 
-            expected_orig_iat = timegm(datetime.utcnow().utctimetuple())
+            expected_iat = timegm(datetime.utcnow().utctimetuple())
 
-            # Make sure 'orig_iat' exists and is the current time (give some slack)
-            orig_iat = orig_token_decoded['orig_iat']
-            self.assertLessEqual(orig_iat - expected_orig_iat, 1)
+            # Make sure 'iat' exists and is the current time (give some slack)
+            iat = orig_token_decoded['iat']
+            self.assertLessEqual(iat - expected_iat, 1)
 
             with freeze_time('2015-01-01 00:00:03'):
 
@@ -332,8 +332,8 @@ class RefreshJSONWebTokenTests(TokenTestCase):
             new_token = response.data['token']
             new_token_decoded = utils.jwt_decode_handler(new_token)
 
-        # Make sure 'orig_iat' on the new token is same as original
-        self.assertEquals(new_token_decoded['orig_iat'], orig_iat)
+        # Make sure 'iat' on the new token is same as original
+        self.assertEquals(new_token_decoded['iat'], iat)
         self.assertGreater(new_token_decoded['exp'], orig_token_decoded['exp'])
 
     def test_refresh_jwt_after_refresh_expiration(self):
@@ -342,12 +342,12 @@ class RefreshJSONWebTokenTests(TokenTestCase):
         """
         client = APIClient(enforce_csrf_checks=True)
 
-        orig_iat = (datetime.utcnow() - api_settings.JWT_REFRESH_EXPIRATION_DELTA -
+        iat = (datetime.utcnow() - api_settings.JWT_REFRESH_EXPIRATION_DELTA -
                     timedelta(seconds=5))
         token = self.create_token(
             self.user,
             exp=datetime.utcnow() + timedelta(hours=1),
-            orig_iat=orig_iat
+            iat=iat
         )
 
         response = client.post('/auth-token-refresh/', {'token': token},

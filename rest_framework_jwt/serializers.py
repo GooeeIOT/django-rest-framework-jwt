@@ -143,10 +143,10 @@ class RefreshJSONWebTokenSerializer(VerificationBaseSerializer):
 
         payload = self._check_payload(token=token)
         user = self._check_user(payload=payload)
-        # Get and check 'orig_iat'
-        orig_iat = payload.get('orig_iat')
+        # Get and check 'iat'
+        iat = payload.get('iat')
 
-        if orig_iat:
+        if iat:
             # Verify expiration
             refresh_limit = api_settings.JWT_REFRESH_EXPIRATION_DELTA
 
@@ -154,18 +154,18 @@ class RefreshJSONWebTokenSerializer(VerificationBaseSerializer):
                 refresh_limit = (refresh_limit.days * 24 * 3600 +
                                  refresh_limit.seconds)
 
-            expiration_timestamp = orig_iat + int(refresh_limit)
+            expiration_timestamp = iat + int(refresh_limit)
             now_timestamp = timegm(datetime.utcnow().utctimetuple())
 
             if now_timestamp > expiration_timestamp:
                 msg = _('Refresh has expired.')
                 raise serializers.ValidationError(msg)
         else:
-            msg = _('orig_iat field is required.')
+            msg = _('iat field is required.')
             raise serializers.ValidationError(msg)
 
         new_payload = jwt_payload_handler(user)
-        new_payload['orig_iat'] = orig_iat
+        new_payload['iat'] = iat
 
         return {
             'token': jwt_encode_handler(new_payload),

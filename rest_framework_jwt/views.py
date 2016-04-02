@@ -88,7 +88,7 @@ class RefreshJSONWebToken(JSONWebTokenAPIView):
     API View that returns a refreshed token (with new expiration) based on
     existing token
 
-    If 'orig_iat' field (original issued-at-time) is found, will first check
+    If 'iat' field (original issued-at-time) is found, will first check
     if it's within expiration window, then copy it to the new token
     """
     serializer_class = RefreshJSONWebTokenSerializer
